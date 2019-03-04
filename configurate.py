@@ -24,6 +24,7 @@ def load_setup_info():
 SETUP_INFO = load_setup_info()
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PKG_FILE = os.path.join(CURRENT_DIR, SETUP_INFO["package"]["name"], "__init__.py")
+MIN_CONFIG_KEYS = ["log", "db"]
 
 
 def patch_config(config_file=None):
@@ -36,7 +37,7 @@ def patch_config(config_file=None):
     if type(config_data) != dict:
         ConfigurationError("Error in the configuration file '{file}'".format(file=config_file))
 
-    if not {"log", "db"}.issubset(set(config_data.keys())):
+    if not set(MIN_CONFIG_KEYS).issubset(set(config_data.keys())):
         ConfigurationError("Error in the configuration file '{file}': wrong keys".format(file=config_file))
 
     with open(PKG_FILE, mode="w") as config_definition:
