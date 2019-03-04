@@ -1,0 +1,14 @@
+package:
+    name: tomi_config
+    version: 0.1.0
+defaults:
+    db:
+        server:
+            host: localhost
+            port: 7687
+            protocol: bolt
+        user:
+            name: neo4j
+            password: "123456"
+    log:
+        LEVEL: 50 # TRACE = 1
