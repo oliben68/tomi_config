@@ -1,7 +1,6 @@
 import os
 import subprocess
 import sys
-import ujson
 
 import yaml
 
@@ -24,26 +23,53 @@ def load_setup_info():
 SETUP_INFO = load_setup_info()
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PKG_FILE = os.path.join(CURRENT_DIR, SETUP_INFO["package"]["name"], "__init__.py")
-MIN_CONFIG_KEYS = ["log", "db"]
 
 
-def patch_config(config_file=None):
-    if config_file is None or not os.path.isfile(str(config_file)):
-        config_data = SETUP_INFO['defaults']
-    else:
-        with open(config_file, mode="r") as configuration_file:
-            config_data = yaml.load(configuration_file)
+def patch_config(config_location=None):
+    """
 
-    if type(config_data) != dict:
-        ConfigurationError("Error in the configuration file '{file}'".format(file=config_file))
-
-    if not set(MIN_CONFIG_KEYS).issubset(set(config_data.keys())):
-        ConfigurationError("Error in the configuration file '{file}': wrong keys".format(file=config_file))
-
+    :param config_location:
+    :return:
+    """
     with open(PKG_FILE, mode="w") as config_definition:
-        config_definition.writelines(
-            ["\n", "DB_CONFIG = {db_config}".format(db_config=ujson.dumps(config_data["db"])), "\n",
-             "LOG_CONFIG = {log_config}".format(log_config=ujson.dumps(config_data["log"])), "\n", ])
+        config_definition.write("""import os
+import sys
+
+import yaml
+
+from tomi_config.load_configuration import load
+
+
+min_version = "37"
+
+
+if int(str(sys.version_info.major) + str(sys.version_info.minor)) < int(min_version):
+    print("Minimum version supported is {{ver}}".format(ver=".".join([c for c in min_version])))
+    sys.exit(-1)
+
+
+def load_setup_info():
+    with open(os.path.join(os.getcwd(), ".setup_info")) as pkg_info:
+        return yaml.load(pkg_info)
+
+   
+class Config(object):
+    def __init__(self, setup_info, config_location=None):
+        self._setup_info = setup_info
+        self._config_location = config_location
+
+    def __getattr__(self, attr):
+        configs = load(self._setup_info, config_location=self._config_location)
+        
+        if not attr in configs.keys():
+            raise AttributeError(attr)
+        
+        return configs[attr]
+
+
+CONFIG=Config(load_setup_info(), "{config_location}")
+
+""".format(config_location=config_location))
 
 
 def run_setup():
@@ -58,4 +84,4 @@ def run_setup():
 if __name__ == '__main__':
     patch_config(sys.argv[1] if len(sys.argv) > 1 else None)
     run_setup()
-    os.remove(PKG_FILE)
+    # os.remove(PKG_FILE)
