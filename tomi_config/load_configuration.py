@@ -11,7 +11,7 @@ class ConfigurationError(Exception):
 MIN_CONFIG_KEYS = ["log", "db"]
 
 
-def load(setup_info, config_location=None):
+def load(defaults, config_location=None):
     if os.path.isdir(str(config_location)):
         config_data = {}
         for root, dirs, files in os.walk(config_location):
@@ -19,10 +19,9 @@ def load(setup_info, config_location=None):
                 if file.endswith(".yml") or file.endswith(".yaml"):
                     with open(os.path.join(root, file), mode="r") as configuration_file:
                         config_data.update(yaml.load(configuration_file))
-                print(config_data)
     else:
         if config_location is None or not os.path.isfile(str(config_location)):
-            config_data = setup_info['defaults']
+            config_data = defaults
         else:
             with open(config_location, mode="r") as configuration_file:
                 config_data = yaml.load(configuration_file)

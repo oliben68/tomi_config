@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-python configurate.py
+python configurate.py "$@"
