@@ -11,20 +11,20 @@ class ConfigurationError(Exception):
 MIN_CONFIG_KEYS = ["log", "db"]
 
 
-def load(defaults, config_location=None):
+def load(defaults, config_location=None, defaults_have_priority=True):
+    config_data = defaults
     if os.path.isdir(str(config_location)):
-        config_data = {}
         for root, dirs, files in os.walk(config_location):
             for file in files:
                 if file.endswith(".yml") or file.endswith(".yaml"):
                     with open(os.path.join(root, file), mode="r") as configuration_file:
-                        config_data.update(yaml.load(configuration_file))
+                        config_data = {**yaml.load(configuration_file), **config_data} if defaults_have_priority else {
+                            **config_data, **yaml.load(configuration_file)}
     else:
-        if config_location is None or not os.path.isfile(str(config_location)):
-            config_data = defaults
-        else:
+        if config_location is not None and os.path.isfile(str(config_location)):
             with open(config_location, mode="r") as configuration_file:
-                config_data = yaml.load(configuration_file)
+                config_data = {**yaml.load(configuration_file), **config_data} if defaults_have_priority else {
+                    **config_data,  **yaml.load(configuration_file)}
 
     if type(config_data) != dict:
         raise ConfigurationError("Error in the configuration file '{file}'".format(file=config_location))

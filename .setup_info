@@ -11,4 +11,5 @@ defaults:
             name: neo4j
             password: "123456"
     log:
-        LEVEL: 50 # TRACE = 1
+        level: logging.INFO
+        format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
