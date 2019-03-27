@@ -18,7 +18,7 @@ if int(str(sys.version_info.major) + str(sys.version_info.minor)) < int(min_vers
 
 def load_setup_info():
     with open(os.path.join(os.getcwd(), ".setup_info")) as pkg_info:
-        return yaml.load(pkg_info)
+        return yaml.load(pkg_info, Loader=yaml.FullLoader)
 
 
 SETUP_INFO = load_setup_info()
